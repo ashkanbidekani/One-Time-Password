@@ -1,37 +1,37 @@
 from fastapi import FastAPI
 import random
 from datetime import datetime,timedelta
-
-# from main import otp_data
-
-# from main import otp_data
+#-----------------------------------------------------------------------------------------------------------------------
 
 app = FastAPI()
-@app.get("/")
+data = {
+    "code": None,
+    "created_at": None
+}
 #-----------------------------------------------------------------------------------------------------------------------
-def home ():
-    def gen():
-# ----------------------------------------------------------------------------------------------------------------------
-        otp_data = {
-            "code": None,
-            "created_at": None
-        }
 
-# ----------------------------------------------------------------------------------------------------------------------
-        otp = random.randint(1000000, 100000000)
-        otp_data["code"] = otp
-        otp_data["created_at"] = datetime.now()
+@app.get("/generation")
+def gen():
+    # password = random.randint(100000,999999)
+    data ["code"] = random.randint(100000,999999)
+    data ["created_at"] = datetime.utcnow()
+    return data
+#-----------------------------------------------------------------------------------------------------------------------
 
-        return otp_data
+@app.get("/validate")
+def validation(code: int):
+    if data["code"] is None:
+        return {"status":"No OTP generated yet"}
+    # 1
+    now = datetime.utcnow()
+    created_at = data["created_at"]
 
-    @app.get("/echo")
-    def echo(number: int):
-        if number == otp_data["code"]:
-            return True
-        else:
-            return False
-    return gen()
-
-
-
+    if now - created_at > timedelta(seconds= 10):
+        return {"status": "Invalid (expired)"}
+    # 2
+    if code != data["code"]:
+        return {"status": "Invalid (wrong code)"}
+    # 3
+    return {"status":"OK (valid)"}
+    # 4
 

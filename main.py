@@ -1,34 +1,37 @@
+from fastapi import FastAPI
 import random
 from datetime import datetime,timedelta
-#---------------------------------------------------------------------------------------------------------------------
-otp_data = {
+#-----------------------------------------------------------------------------------------------------------------------
+
+app = FastAPI()
+data = {
     "code": None,
     "created_at": None
 }
-#---------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
+
+@app.get("/generation")
 def gen():
-    otp = random.randint(1000000,100000000)
-    otp_data ["code"] = otp
-    otp_data ["created_at"] = datetime.now()
-    return otp_data
-#---------------------------------------------------------------------------------------------------------------------
-def validation(input_code):
-    if otp_data["code"] == None:
-        return "There is no generated password "
-    now = datetime.now()
-    created = otp_data["created_at"]
+    # password = random.randint(100000,999999)
+    data ["code"] = random.randint(100000,999999)
+    data ["created_at"] = datetime.utcnow()
+    return data
+#-----------------------------------------------------------------------------------------------------------------------
 
-    if now - created > timedelta(seconds=10):
-        return "Your one-time password has expired. "
+@app.get("/validate")
+def validation(code: int):
+    if data["code"] is None:
+        return {"status":"No OTP generated yet"} 
+    # 1
+    now = datetime.utcnow()
+    created_at = data["created_at"]
 
-    if input_code == otp_data["code"] :
-        return "The password is Correct"
+    if now - created_at > timedelta(seconds= 10):
+        return {"status": "Invalid (expired)"}
+    # 2
+    if code != data["code"]:
+        return {"status": "Invalid (wrong code)"}
+    # 3
+    return {"status":"OK (valid)"}
+    # 4
 
-    else:
-        return "The passsword is not correct"
-#---------------------------------------------------------------------------------------------------------------------
-code = gen()
-print("OTP:", code)
-#---------------------------------------------------------------------------------------------------------------------
-user_input = int(input("Enter OTP: "))
-print(validation(user_input))
