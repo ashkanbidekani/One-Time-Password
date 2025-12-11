@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import random
+import uuid
 from datetime import datetime,timedelta
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -12,10 +13,11 @@ data = {
 
 @app.get("/generation")
 def gen():
-    # password = random.randint(100000,999999)
-    data ["code"] = random.randint(100000,999999)
+    # data ["code"] = str(uuid.uuid4())
+    data["code"] = random.randint(100000, 999999)
     data ["created_at"] = datetime.utcnow()
-    return data
+    lst = [data["code"], data["created_at"]]
+    return lst
 #-----------------------------------------------------------------------------------------------------------------------
 
 @app.get("/validate")
@@ -26,7 +28,7 @@ def validation(code: int):
     now = datetime.utcnow()
     created_at = data["created_at"]
 
-    if now - created_at > timedelta(seconds= 10):
+    if now - created_at > timedelta(seconds= 20):
         return {"status": "Invalid (expired)"}
     # 2
     if code != data["code"]:
